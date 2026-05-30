@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Schule</title>
+  <style>
+    /* DYNAMISCHES SYSTEM-DESIGN (Standard: Premium iOS Ultra-Dark) */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #1e1e20 0%, #121214 50%, #080809 100%);
+      --apple-border: rgba(255, 255, 255, 0.08);
+      --accent: #0A84FF; 
+      --text-main: #FFFFFF;
+      --text-secondary: rgba(255, 255, 255, 0.45);
+      --text-desc: rgba(255, 255, 255, 0.75);
+      
+      --row-bg: #242426;
+      --input-bg: #2c2c2e;
+      --modal-bg: rgba(25, 25, 27, 0.6);
+      --header-bg: rgba(20, 20, 22, 0.2);
+      --blur-profile: blur(30px) saturate(200%);
+      
+      --wheel-bg: rgba(0, 0, 0, 0.2);
+      --wheel-text: rgba(255, 255, 255, 0.25);
+      --wheel-selected: #ffffff;
+      --wheel-bar: rgba(255, 255, 255, 0.04);
+      --wheel-border: rgba(255, 255, 255, 0.1);
+
+      --shadow-main: 0 10px 25px rgba(0, 0, 0, 0.25);
+      --shadow-btn: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --radius-capsule: 40px;
+    }
+
+    /* PREMIUM APPLE LIGHT MODE OVERRIDES */
+    body.light-mode {
+      --bg-gradient: linear-gradient(135deg, #f2f2f7 0%, #e5e5ea 100%);
+      --apple-border: rgba(0, 0, 0, 0.06);
+      --accent: #007AFF; 
+      --text-main: #000000;
+      --text-secondary: rgba(0, 0, 0, 0.4);
+      --text-desc: rgba(0, 0, 0, 0.65);
+      
+      --row-bg: #FFFFFF; 
+      --input-bg: #e5e5ea;
+      --modal-bg: rgba(242, 242, 247, 0.75);
+      --header-bg: rgba(242, 242, 247, 0.4);
+      
+      --wheel-bg: rgba(0, 0, 0, 0.04);
+      --wheel-text: rgba(0, 0, 0, 0.25);
+      --wheel-selected: #000000;
+      --wheel-bar: rgba(0, 0, 0, 0.03);
+      --wheel-border: rgba(0, 0, 0, 0.05);
+
+      --shadow-main: 0 6px 18px rgba(0, 0, 0, 0.06);
+      --shadow-btn: 0 5px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+      letter-spacing: -0.3px;
+      user-select: none; 
+    }
+
+    body {
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    header {
+      padding: 65px 24px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      background: var(--header-bg);
+      backdrop-filter: var(--blur-profile);
+      -webkit-backdrop-filter: var(--blur-profile);
+      border-bottom: 0.33px solid var(--apple-border);
+      z-index: 10;
+    }
+
+    h1 { 
+      font-size: 34px; 
+      font-weight: 700; 
+      letter-spacing: -1.2px;
+    }
+
+    .add-btn {
+      color: var(--accent);
+      background: none;
+      border: none;
+      font-size: 36px;
+      font-weight: 200;
+      line-height: 0.8;
+      cursor: pointer;
+      padding: 0 4px 4px;
+      transition: opacity 0.2s ease, display 0.2s;
+    }
+    .add-btn:active { opacity: 0.4; }
+
+    .view {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px 140px;
+    }
+    .view.active { display: flex; flex-direction: column; }
+
+    .greeting-container {
+      margin-bottom: 24px;
+      padding: 0 4px;
+    }
+    .greeting-time {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+    }
+    .greeting-sub {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    /* SWIPE ENGINE & LISTS */
+    .list-row-wrapper {
+      position: relative;
+      margin-bottom: 14px;
+      background: none;
+    }
+
+    .swipe-action {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 0; 
+      overflow: hidden; 
+      display: flex;
+      align-items: center;
+      justify-content: center; 
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      z-index: 1;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      border-radius: var(--radius-capsule); 
+      box-shadow: var(--shadow-btn);
+    }
+    .swipe-action span { white-space: nowrap; display: block; text-align: center; }
+    .action-left { left: 0; }
+    .action-right { right: 0; }
+    .bg-delete { background: #FF3B30; }
+    .bg-edit { background: var(--accent); } 
+
+    .list-row {
+      padding: 20px 28px 20px 36px; 
+      display: flex;
+      flex-direction: column;
+      background: var(--row-bg); 
+      position: relative;
+      z-index: 2;
+      border-radius: var(--radius-capsule);
+      will-change: transform;
+      cursor: grab;
+      box-shadow: var(--shadow-main);
+      border: 0.33px solid var(--apple-border);
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .list-row:active { cursor: grabbing; }
+
+    .subject-stripe {
+      position: absolute;
+      left: 14px; 
+      top: 14px; 
+      bottom: 14px;
+      width: 5px;
+      border-radius: 10px;
+    }
+
+    .row-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .subject { font-size: 19px; font-weight: 600; }
+    .type { font-size: 13px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .description { font-size: 15px; color: var(--text-desc); line-height: 1.45; }
+    
+    .meta-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+    .dates { color: var(--text-secondary); font-weight: 500; }
+
+    .grades-preview-container {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .grade-badge {
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      border: 0.33px solid var(--apple-border);
+    }
+
+    .settings-heading {
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin: 20px 8px 8px;
+    }
+
+    .settings-row {
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+    }
+
+    .settings-select {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 600;
+      outline: none;
+      text-align: right;
+      direction: rtl;
+      cursor: pointer;
+    }
+    .settings-select option { background: var(--row-bg); color: var(--text-main); }
+
+    .color-picker-wrapper {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      overflow: hidden;
+      position: relative;
+    }
+    .color-picker-wrapper input[type="color"] {
+      position: absolute;
+      top: -5px; left: -5px;
+      width: 40px; height: 40px;
+      border: none; background: none;
+      cursor: pointer;
+    }
+
+    .tab-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 88px;
+      background: var(--header-bg);
+      backdrop-filter: var(--blur-profile);
+      -webkit-backdrop-filter: var(--blur-profile);
+      border-top: 0.33px solid var(--apple-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 28px;
+      z-index: 90;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      opacity: 0.5;
+      font-size: 13px;
+      font-weight: 600;
+      flex: 1;
+      height: 100%;
+      cursor: pointer;
+      transition: color 0.2s ease, opacity 0.2s ease;
+    }
+    .tab-item.active { color: var(--accent); opacity: 1; }
+
+    .modal-sheet {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 100vh;
+      background: var(--modal-bg);
+      backdrop-filter: blur(45px) saturate(210%);
+      -webkit-backdrop-filter: blur(45px) saturate(210%);
+      border: 0.33px solid var(--apple-border);
+      border-radius: 30px 30px 0 0;
+      z-index: 100;
+      transform: translateY(100%);
+      transition: transform 0.45s cubic-bezier(0.15, 0.85, 0.35, 1), background 0.3s;
+      box-shadow: 0 -15px 45px rgba(0,0,0,0.3);
+    }
+    .modal-sheet.active { transform: translateY(8%); }
+
+    .modal-header {
+      padding: 22px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 0.33px solid var(--apple-border);
+    }
+    .modal-title { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; }
+    .modal-btn { color: var(--accent); font-size: 17px; cursor: pointer; transition: opacity 0.2s; }
+    .modal-btn:active { opacity: 0.3; }
+
+    .modal-content {
+      padding: 24px 20px;
+      overflow-y: auto;
+      height: calc(100vh - 130px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-box {
+      background: var(--input-bg); 
+      border: 0.33px solid var(--apple-border);
+      border-radius: var(--radius-capsule); 
+      padding: 10px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 56px;
+      transition: background 0.3s;
+    }
+    .input-box label {
+      font-size: 10px;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      margin-bottom: 1px;
+    }
+    .input-box input, .input-box select, .input-box textarea {
+      background: none; border: none; color: var(--text-main);
+      font-size: 16px; font-weight: 500; outline: none; width: 100%;
+    }
+    .input-box.textarea-box { border-radius: 22px; padding: 14px 24px; }
+    .input-box textarea { height: 75px; resize: none; }
+
+    .modal-grades-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.1);
+      padding: 12px;
+      border-radius: 20px;
+      border: 0.33px solid var(--apple-border);
+    }
+    .modal-grade-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--row-bg);
+      border-radius: 12px;
+    }
+    .modal-grade-delete {
+      color: #FF3B30;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .picker-container-box {
+      background: rgba(255,255,255,0.03); border: 0.33px solid var(--apple-border);
+      border-radius: 24px; padding: 14px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .picker-container-box label {
+      font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.7px; padding-left: 12px;
+    }
+
+    .wheel-picker {
+      display: flex; position: relative; height: 126px; background: var(--wheel-bg);
+      border-radius: 18px; overflow: hidden;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+    }
+    .wheel-column { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+    .wheel-column::-webkit-scrollbar { display: none; }
+    .wheel-item {
+      height: 42px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+      color: var(--wheel-text); scroll-snap-align: center; transition: all 0.2s ease;
+    }
+    .wheel-item.selected { color: var(--wheel-selected); font-weight: 600; transform: scale(1.05); }
+    .wheel-selection-bar {
+      position: absolute; left: 6px; right: 6px; top: 42px; height: 42px;
+      background: var(--wheel-bar); border-top: 0.33px solid var(--wheel-border); border-bottom: 0.33px solid var(--wheel-border);
+      pointer-events: none; border-radius: 8px;
+    }
+    .wheel-spacer { height: 42px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 id="view-title">Übersicht</h1>
+    <button class="add-btn" id="header-add-btn" onclick="openNewModal()">+</button>
+  </header>
+
+  <div id="view-tests" class="view active">
+    <div class="greeting-container">
+      <div class="greeting-time" id="greeting-text">Guten Morgen!</div>
+      <div class="greeting-sub" id="greeting-subtext">Lade deine Schuldaten...</div>
+    </div>
+
+    <div class="settings-heading" style="margin: 0 4px 12px; padding-left: 0;">Anstehende Tests</div>
+    <div id="tests-list-container"></div>
+  </div>
+
+  <div id="view-homework" class="view"></div>
+
+  <div id="view-grades" class="view"></div>
+
+  <div id="view-settings" class="view">
+    <div class="settings-heading">Allgemein</div>
+    <div class="list-row-wrapper">
+      <div class="list-row settings-row">
+        <div>
+          <span class="subject" style="font-size: 17px;">Wischgesten</span>
+          <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">Richtung für Aktionen anpassen</p>
+        </div>
+        <select id="setting-swipe" class="settings-select" onchange="changeSwipeSetting()">
+          <option value="normal">Links: Löschen • Rechts: Edit</option>
+          <option value="inverted">Links: Edit • Rechts: Löschen</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="list-row-wrapper">
+      <div class="list-row settings-row">
+        <div>
+          <span class="subject" style="font-size: 17px;">Erscheinungsbild</span>
+          <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">App-Thema wechseln</p>
+        </div>
+        <select id="setting-theme" class="settings-select" onchange="changeThemeSetting()">
+          <option value="dark">Dunkel</option>
+          <option value="light">Hell</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-heading">Personalisierung</div>
+    <div class="list-row-wrapper" onclick="toggleColorsFolder()">
+      <div class="list-row settings-row" style="cursor: pointer;">
+        <div>
+          <span class="subject" style="font-size: 17px;">Noten Farben</span>
+          <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">Farben für alle Fächer verwalten</p>
+        </div>
+        <span id="folder-arrow" style="color: var(--accent); font-size: 16px; font-weight: 700; transition: transform 0.25s ease; display: inline-block;">▸</span>
+      </div>
+    </div>
+    
+    <div id="settings-colors-container" style="display: none; flex-direction: column; gap: 2px; margin-top: -6px; padding-bottom: 14px;"></div>
+  </div>
+
+  <nav class="tab-bar">
+    <div class="tab-item active" onclick="switchTab('tests', 'Übersicht', this)"><span>Tests</span></div>
+    <div class="tab-item" onclick="switchTab('homework', 'Hausaufgaben', this)"><span>Hausaufgaben</span></div>
+    <div class="tab-item" onclick="switchTab('grades', 'Noten', this)"><span>Noten</span></div>
+    <div class="tab-item" onclick="switchTab('settings', 'Optionen', this)"><span>Settings</span></div>
+  </nav>
+
+  <div id="modal" class="modal-sheet">
+    <div class="modal-header">
+      <span class="modal-btn" onclick="toggleModal()">Abbrechen</span>
+      <span class="modal-title" id="modal-view-title">Neuer Eintrag</span>
+      <span class="modal-btn" style="font-weight: 600;" onclick="saveTest()">Fertig</span>
+    </div>
+    <div class="modal-content">
+      <div class="input-box">
+        <label>Fach</label>
+        <input type="text" id="input-subject" placeholder="z.B. Spanisch">
+      </div>
+      <div class="input-box">
+        <label>Art der Arbeit</label>
+        <select id="select-type">
+          <option>Klassenarbeit</option>
+          <option>Test</option>
+          <option>Mündliches</option>
+          <option>Gruppenarbeit</option>
+          <option>Powerpoint</option>
+          <option>Sonstiges</option>
+        </select>
+      </div>
+      <div class="input-box textarea-box">
+        <label>Beschreibung</label>
+        <textarea id="textarea-desc" placeholder="Welche Themen kommen dran..."></textarea>
+      </div>
+      <div class="picker-container-box">
+        <label>Datum des Tests</label>
+        <div class="wheel-picker">
+          <div class="wheel-selection-bar"></div>
+          <div class="wheel-column" id="wheel-test-day"></div>
+          <div class="wheel-column" id="wheel-test-month"></div>
+          <div class="wheel-column" id="wheel-test-year"></div>
+        </div>
+      </div>
+      <div class="picker-container-box">
+        <label>Lern-Start</label>
+        <div class="wheel-picker">
+          <div class="wheel-selection-bar"></div>
+          <div class="wheel-column" id="wheel-learn-day"></div>
+          <div class="wheel-column" id="wheel-learn-month"></div>
+          <div class="wheel-column" id="wheel-learn-year"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-homework" class="modal-sheet">
+    <div class="modal-header">
+      <span class="modal-btn" onclick="toggleHomeworkModal()">Abbrechen</span>
+      <span class="modal-title" id="modal-homework-title">Neue Hausaufgabe</span>
+      <span class="modal-btn" style="font-weight: 600;" onclick="saveHomework()">Fertig</span>
+    </div>
+    <div class="modal-content">
+      <div class="input-box">
+        <label>Fach</label>
+        <input type="text" id="input-hw-subject" placeholder="z.B. Mathe">
+      </div>
+      <div class="input-box textarea-box">
+        <label>Beschreibung</label>
+        <textarea id="textarea-hw-desc" placeholder="S. 45 Nr. 2abc..."></textarea>
+      </div>
+      <div class="picker-container-box">
+        <label>Abzugeben am (Datum)</label>
+        <div class="wheel-picker">
+          <div class="wheel-selection-bar"></div>
+          <div class="wheel-column" id="wheel-hw-day"></div>
+          <div class="wheel-column" id="wheel-hw-month"></div>
+          <div class="wheel-column" id="wheel-hw-year"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-grades" class="modal-sheet">
+    <div class="modal-header">
+      <span class="modal-btn" onclick="toggleGradesModal()">Schließen</span>
+      <span class="modal-title" id="modal-grades-title">Fachname</span>
+      <span class="modal-btn" style="font-weight: 600; color: transparent; pointer-events: none;">-</span>
+    </div>
+    <div class="modal-content">
+      <div class="settings-heading" style="margin: 0;">Alle eingetragenen Noten</div>
+      <div class="modal-grades-list" id="modal-grades-list-container"></div>
+      
+      <div class="settings-heading" style="margin: 10px 0 0;">Neue Note hinzufügen</div>
+      <div class="input-box">
+        <label>Note</label>
+        <select id="input-grade-value">
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        </select>
+      </div>
+      <div class="input-box">
+        <label>Art der Arbeit</label>
+        <select id="input-grade-type">
+          <option>Klassenarbeit</option>
+          <option>Test</option>
+          <option>Mündliches</option>
+          <option>Gruppenarbeit</option>
+          <option>Powerpoint</option>
+          <option>Sonstiges</option>
+        </select>
+      </div>
+      <button class="list-row" style="background: var(--accent); color: white; font-weight: 600; text-align: center; align-items: center; justify-content: center; cursor: pointer; border: none; padding-left: 28px;" onclick="addGradeToCurrentSubject()">Note speichern</button>
+    </div>
+  </div>
+
+  <script>
+    let tests = JSON.parse(localStorage.getItem('school_tests')) || [];
+    let homeworks = JSON.parse(localStorage.getItem('school_homeworks')) || [];
+    let swipeSetting = localStorage.getItem('school_swipe_setting') || 'normal';
+    let themeSetting = localStorage.getItem('school_theme_setting') || 'dark';
+    let editingId = null;
+    let editingHomeworkId = null;
+    let currentSelectedSubject = null;
+
+    const defaultSubjects = ["Biologie", "Chemie", "Deutsch", "Englisch", "Erdkunde", "Geschichte", "Informatik", "Kunst", "LER", "Mathe", "Musik", "Physik", "Politik", "Spanisch", "Sport"];
+    const defaultColors = {
+      "Biologie": "#34C759", "Chemie": "#FF9500", "Deutsch": "#AF52DE", "Englisch": "#007AFF",
+      "Erdkunde": "#A2845E", "Geschichte": "#5856D6", "Informatik": "#5AC8FA", "Kunst": "#FF2D55",
+      "LER": "#FFCC00", "Mathe": "#FF3B30", "Musik": "#4CD964", "Physik": "#1D3557",
+      "Politik": "#8E8E93", "Spanisch": "#FF9500", "Sport": "#007AFF"
+    };
+
+    let subjectData = JSON.parse(localStorage.getItem('school_subject_data')) || {};
+    defaultSubjects.forEach(sub => {
+      if (!subjectData[sub]) {
+        subjectData[sub] = { grades: [], color: defaultColors[sub] || "#8E8E93", lastUpdated: 0 };
+      }
+    });
+
+    const monthsDE = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+    const years = [2026, 2027, 2028, 2029, 2030];
+
+    window.onload = function() {
+      document.getElementById('setting-swipe').value = swipeSetting;
+      document.getElementById('setting-theme').value = themeSetting;
+      applyTheme(themeSetting);
+      setupAllWheels();
+      renderTests();
+      renderHomeworks();
+      renderGradesTab();
+      renderColorSettings();
+      updateGreeting();
+    };
+
+    function toggleModal() { document.getElementById('modal').classList.toggle('active'); }
+    function toggleHomeworkModal() { document.getElementById('modal-homework').classList.toggle('active'); }
+    function toggleGradesModal() { document.getElementById('modal-grades').classList.toggle('active'); }
+
+    // Dynamic Greeting Logik
+    function updateGreeting() {
+      const hr = new Date().getHours();
+      let greet = "Schönen Abend!";
+      if (hr >= 5 && hr < 12) greet = "Guten Morgen!";
+      else if (hr >= 12 && hr < 18) greet = "Guten Tag!";
+      else if (hr >= 18 && hr < 22) greet = "Schönen Abend!";
+      else greet = "Gute Nacht!";
+      
+      document.getElementById('greeting-text').innerText = greet;
+
+      let subtext = "Genieße deinen Tag!";
+      if (tests.length > 0) {
+        subtext = `Du hast ${tests.length} anstehende(n) Test(s). Zeit zum Lernen!`;
+      } else if (homeworks.length > 0) {
+        subtext = `Keine Tests, aber du hast noch ${homeworks.length} Hausaufgabe(n) offen.`;
+      } else {
+        subtext = "Alles erledigt! Perfekter Moment zum Entspannen.";
+      }
+      document.getElementById('greeting-subtext').innerText = subtext;
+    }
+
+    function openNewModal() {
+      editingId = null;
+      document.getElementById('modal-view-title').innerText = "Neuer Eintrag";
+      document.getElementById('input-subject').value = '';
+      document.getElementById('textarea-desc').value = '';
+      toggleModal();
+    }
+
+    function openNewHomeworkModal() {
+      editingHomeworkId = null;
+      document.getElementById('modal-homework-title').innerText = "Neue Hausaufgabe";
+      document.getElementById('input-hw-subject').value = '';
+      document.getElementById('textarea-hw-desc').value = '';
+      toggleHomeworkModal();
+    }
+
+    function changeSwipeSetting() {
+      swipeSetting = document.getElementById('setting-swipe').value;
+      localStorage.setItem('school_swipe_setting', swipeSetting);
+      renderTests();
+      renderHomeworks();
+    }
+
+    function changeThemeSetting() {
+      themeSetting = document.getElementById('setting-theme').value;
+      localStorage.setItem('school_theme_setting', themeSetting);
+      applyTheme(themeSetting);
+    }
+
+    function applyTheme(theme) {
+      if (theme === 'light') document.body.classList.add('light-mode');
+      else document.body.classList.remove('light-mode');
+    }
+
+    function switchTab(tabId, title, element) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + tabId).classList.add('active');
+      document.getElementById('view-title').innerText = title;
+      document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+      element.classList.add('active');
+      
+      const addBtn = document.getElementById('header-add-btn');
+      if (tabId === 'tests') {
+        addBtn.style.display = 'block';
+        addBtn.setAttribute('onclick', 'openNewModal()');
+      } else if (tabId === 'homework') {
+        addBtn.style.display = 'block';
+        addBtn.setAttribute('onclick', 'openNewHomeworkModal()');
+      } else {
+        addBtn.style.display = 'none';
+      }
+    }
+
+    function toggleColorsFolder() {
+      const container = document.getElementById('settings-colors-container');
+      const arrow = document.getElementById('folder-arrow');
+      if (container.style.display === 'none') {
+        container.style.display = 'flex';
+        arrow.style.transform = 'rotate(90deg)';
+      } else {
+        container.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function getSortedSubjects() {
+      return [...defaultSubjects].sort((a, b) => {
+        let timeA = subjectData[a].lastUpdated || 0;
+        let timeB = subjectData[b].lastUpdated || 0;
+        if (timeB !== timeA) return timeB - timeA;
+        return a.localeCompare(b);
+      });
+    }
+
+    function renderGradesTab() {
+      const container = document.getElementById('view-grades');
+      container.innerHTML = '';
+      const sorted = getSortedSubjects();
+
+      sorted.forEach(sub => {
+        const data = subjectData[sub];
+        
+        let avgStr = "—";
+        if (data.grades.length > 0) {
+          let sum = data.grades.reduce((acc, g) => acc + parseFloat(g.value), 0);
+          avgStr = "Ø " + (sum / data.grades.length).toFixed(1);
+        }
+
+        let lastThreeHtml = '';
+        let lastThreeGrades = data.grades.slice(-3).reverse();
+        if (lastThreeGrades.length === 0) {
+          lastThreeHtml = '<span style="color: var(--text-secondary);">Keine Noten</span>';
+        } else {
+          lastThreeGrades.forEach(g => {
+            lastThreeHtml += `<span class="grade-badge">${g.value}</span>`;
+          });
+        }
+
+        container.innerHTML += `
+          <div class="list-row-wrapper" onclick="openSubjectGrades('${sub}')">
+            <div class="list-row">
+              <div class="subject-stripe" style="background-color: ${data.color};"></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div>
+                  <span class="subject">${sub}</span>
+                  <div class="grades-preview-container">
+                    ${lastThreeHtml}
+                  </div>
+                </div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent);">${avgStr}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function openSubjectGrades(subject) {
+      currentSelectedSubject = subject;
+      document.getElementById('modal-grades-title').innerText = subject;
+      buildModalGradesList();
+      toggleGradesModal();
+    }
+
+    function buildModalGradesList() {
+      const container = document.getElementById('modal-grades-list-container');
+      container.innerHTML = '';
+      const data = subjectData[currentSelectedSubject];
+
+      if (data.grades.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; padding: 10px; text-align: center;">Noch keine Noten eingetragen.</p>';
+        return;
+      }
+
+      data.grades.forEach((g, idx) => {
+        container.innerHTML += `
+          <div class="modal-grade-row">
+            <div>
+              <span style="font-weight: 700; font-size: 17px; margin-right: 12px;">Note: ${g.value}</span>
+              <span style="color: var(--text-secondary); font-size: 14px;">${g.type}</span>
+            </div>
+            <span class="modal-grade-delete" onclick="deleteGrade(${idx})">Löschen</span>
+          </div>
+        `;
+      });
+    }
+
+    function addGradeToCurrentSubject() {
+      const val = document.getElementById('input-grade-value').value;
+      const type = document.getElementById('input-grade-type').value;
+
+      subjectData[currentSelectedSubject].grades.push({ value: val, type: type });
+      subjectData[currentSelectedSubject].lastUpdated = Date.now();
+
+      localStorage.setItem('school_subject_data', JSON.stringify(subjectData));
+      buildModalGradesList();
+      renderGradesTab();
+    }
+
+    function deleteGrade(index) {
+      subjectData[currentSelectedSubject].grades.splice(index, 1);
+      subjectData[currentSelectedSubject].lastUpdated = Date.now();
+
+      localStorage.setItem('school_subject_data', JSON.stringify(subjectData));
+      buildModalGradesList();
+      renderGradesTab();
+    }
+
+    function renderColorSettings() {
+      const container = document.getElementById('settings-colors-container');
+      container.innerHTML = '';
+      const alphabetisch = [...defaultSubjects].sort((a,b) => a.localeCompare(b));
+
+      alphabetisch.forEach(sub => {
+        container.innerHTML += `
+          <div class="list-row-wrapper" style="margin-bottom: 6px;">
+            <div class="list-row settings-row" style="padding: 14px 24px;">
+              <span class="subject" style="font-size: 16px;">${sub}</span>
+              <div class="color-picker-wrapper" style="background-color: ${subjectData[sub].color};">
+                <input type="color" value="${subjectData[sub].color}" onchange="updateSubjectColor('${sub}', this.value)">
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function updateSubjectColor(subject, colorValue) {
+      subjectData[subject].color = colorValue;
+      localStorage.setItem('school_subject_data', JSON.stringify(subjectData));
+      renderGradesTab();
+      renderColorSettings();
+      renderHomeworks(); 
+    }
+
+    function setupAllWheels() {
+      buildWheelColumns('wheel-test-day', 1, 31, '');
+      buildWheelColumns('wheel-test-month', 0, 11, 'month');
+      buildWheelColumns('wheel-test-year', 2026, 2030, 'year');
+      buildWheelColumns('wheel-learn-day', 1, 31, '');
+      buildWheelColumns('wheel-learn-month', 0, 11, 'month');
+      buildWheelColumns('wheel-learn-year', 2026, 2030, 'year');
+
+      buildWheelColumns('wheel-hw-day', 1, 31, '');
+      buildWheelColumns('wheel-hw-month', 0, 11, 'month');
+      buildWheelColumns('wheel-hw-year', 2026, 2030, 'year');
+
+      setTimeout(() => {
+        setWheelPosition('wheel-test-day', 28); setWheelPosition('wheel-test-month', 4); setWheelPosition('wheel-test-year', 0);
+        setWheelPosition('wheel-learn-day', 19); setWheelPosition('wheel-learn-month', 4); setWheelPosition('wheel-learn-year', 0);
+        setWheelPosition('wheel-hw-day', 28); setWheelPosition('wheel-hw-month', 4); setWheelPosition('wheel-hw-year', 0);
+      }, 100);
+    }
+
+    function buildWheelColumns(id, start, end, format) {
+      const el = document.getElementById(id);
+      let html = '<div class="wheel-spacer"></div>';
+      for (let i = start; i <= end; i++) {
+        let label = i;
+        if (format === 'month') label = monthsDE[i];
+        html += `<div class="wheel-item" data-value="${i}">${label}</div>`;
+      }
+      html += '<div class="wheel-spacer"></div>';
+      el.innerHTML = html;
+      el.addEventListener('scroll', () => {
+        const index = Math.round(el.scrollTop / 42);
+        const items = el.querySelectorAll('.wheel-item');
+        items.forEach((item, idx) => {
+          if (idx === index) item.classList.add('selected');
+          else item.classList.remove('selected');
+        });
+      });
+    }
+
+    function setWheelPosition(id, index) { document.getElementById(id).scrollTop = index * 42; }
+    function getWheelValue(id) {
+      const el = document.getElementById(id);
+      const index = Math.round(el.scrollTop / 42);
+      const items = el.querySelectorAll('.wheel-item');
+      return items[index] ? items[index].getAttribute('data-value') : '';
+    }
+
+    function getDateFromWheels(prefix) {
+      let d = getWheelValue(`wheel-${prefix}-day`);
+      let m = parseInt(getWheelValue(`wheel-${prefix}-month`)) + 1;
+      let y = getWheelValue(`wheel-${prefix}-year`);
+      return `${d < 10 ? '0'+d : d}.${m < 10 ? '0'+m : m}.${y}`;
+    }
+
+    function saveTest() {
+      const subject = document.getElementById('input-subject').value.trim();
+      const type = document.getElementById('select-type').value;
+      const desc = document.getElementById('textarea-desc').value.trim();
+      const dateTest = getDateFromWheels('test');
+      const dateLearn = getDateFromWheels('learn');
+
+      if (!subject) return alert('Bitte gib ein Fach ein.');
+
+      if (editingId !== null) {
+        const idx = tests.findIndex(t => t.id === editingId);
+        if (idx !== -1) tests[idx] = { id: editingId, subject, type, desc: desc || 'Keine Beschreibung vorhanden.', dateTest, dateLearn };
+      } else {
+        tests.push({ id: Date.now(), subject, type, desc: desc || 'Keine Beschreibung vorhanden.', dateTest, dateLearn });
+      }
+      localStorage.setItem('school_tests', JSON.stringify(tests));
+      renderTests();
+      toggleModal();
+    }
+
+    function saveHomework() {
+      const subject = document.getElementById('input-hw-subject').value.trim();
+      const desc = document.getElementById('textarea-hw-desc').value.trim();
+      const dateDue = getDateFromWheels('hw');
+
+      if (!subject) return alert('Bitte gib ein Fach ein.');
+
+      if (editingHomeworkId !== null) {
+        const idx = homeworks.findIndex(h => h.id === editingHomeworkId);
+        if (idx !== -1) homeworks[idx] = { id: editingHomeworkId, subject, desc: desc || 'Keine Beschreibung vorhanden.', dateDue };
+      } else {
+        homeworks.push({ id: Date.now(), subject, desc: desc || 'Keine Beschreibung vorhanden.', dateDue });
+      }
+      localStorage.setItem('school_homeworks', JSON.stringify(homeworks));
+      renderHomeworks();
+      toggleHomeworkModal();
+    }
+
+    function deleteTest(id) {
+      const wrapper = document.getElementById(`wrapper-${id}`);
+      if (wrapper) {
+        wrapper.style.transition = 'all 0.3s ease'; wrapper.style.height = '0px'; wrapper.style.marginBottom = '0px'; wrapper.style.opacity = '0';
+        setTimeout(() => { tests = tests.filter(t => t.id !== id); localStorage.setItem('school_tests', JSON.stringify(tests)); renderTests(); }, 300);
+      } else {
+        tests = tests.filter(t => t.id !== id); localStorage.setItem('school_tests', JSON.stringify(tests)); renderTests();
+      }
+    }
+
+    function deleteHomework(id) {
+      const wrapper = document.getElementById(`hw-wrapper-${id}`);
+      if (wrapper) {
+        wrapper.style.transition = 'all 0.3s ease'; wrapper.style.height = '0px'; wrapper.style.marginBottom = '0px'; wrapper.style.opacity = '0';
+        setTimeout(() => { homeworks = homeworks.filter(h => h.id !== id); localStorage.setItem('school_homeworks', JSON.stringify(homeworks)); renderHomeworks(); }, 300);
+      } else {
+        homeworks = homeworks.filter(h => h.id !== id); localStorage.setItem('school_homeworks', JSON.stringify(homeworks)); renderHomeworks();
+      }
+    }
+
+    function openEditTest(id) {
+      const test = tests.find(t => t.id === id);
+      if (!test) return;
+      editingId = id;
+      document.getElementById('modal-view-title').innerText = "Eintrag bearbeiten";
+      document.getElementById('input-subject').value = test.subject;
+      document.getElementById('select-type').value = test.type;
+      document.getElementById('textarea-desc').value = test.desc === 'Keine Beschreibung vorhanden.' ? '' : test.desc;
+      const tParts = test.dateTest.split('.');
+      setWheelPosition('wheel-test-day', parseInt(tParts[0]) - 1); setWheelPosition('wheel-test-month', parseInt(tParts[1]) - 1); setWheelPosition('wheel-test-year', years.indexOf(parseInt(tParts[2])));
+      const lParts = test.dateLearn.split('.');
+      setWheelPosition('wheel-learn-day', parseInt(lParts[0]) - 1); setWheelPosition('wheel-learn-month', parseInt(lParts[1]) - 1); setWheelPosition('wheel-learn-year', years.indexOf(parseInt(lParts[2])));
+      toggleModal();
+    }
+
+    function openEditHomework(id) {
+      const hw = homeworks.find(h => h.id === id);
+      if (!hw) return;
+      editingHomeworkId = id;
+      document.getElementById('modal-homework-title').innerText = "Hausaufgabe bearbeiten";
+      document.getElementById('input-hw-subject').value = hw.subject;
+      document.getElementById('textarea-hw-desc').value = hw.desc === 'Keine Beschreibung vorhanden.' ? '' : hw.desc;
+      const parts = hw.dateDue.split('.');
+      setWheelPosition('wheel-hw-day', parseInt(parts[0]) - 1); setWheelPosition('wheel-hw-month', parseInt(parts[1]) - 1); setWheelPosition('wheel-hw-year', years.indexOf(parseInt(parts[2])));
+      toggleHomeworkModal();
+    }
+
+    function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+
+    function initSwipeEngine(row, id, type = 'test') {
+      let startX = 0, currentX = 0, isSwiping = false;
+      const gap = 14; 
+      const wrapper = row.parentElement;
+      const leftAction = wrapper.querySelector('.action-left');
+      const rightAction = wrapper.querySelector('.action-right');
+
+      function start(clientX) { 
+        startX = clientX; 
+        row.style.transition = 'none'; 
+        if (leftAction) leftAction.style.transition = 'none'; 
+        if (rightAction) rightAction.style.transition = 'none'; 
+        isSwiping = true; 
+      }
+      
+      function move(clientX) {
+        if (!isSwiping) return;
+        currentX = clientX - startX;
+        row.style.transform = `translateX(${currentX}px)`;
+        if (currentX > 0) {
+          if (leftAction) leftAction.style.width = Math.max(0, currentX - gap) + 'px';
+          if (rightAction) rightAction.style.width = '0px';
+        } else {
+          if (rightAction) rightAction.style.width = Math.max(0, Math.abs(currentX) - gap) + 'px';
+          if (leftAction) leftAction.style.width = '0px';
+        }
+      }
+
+      function end() {
+        if (!isSwiping) return;
+        isSwiping = false;
+        const fullSwipeThreshold = window.innerWidth * 0.40;
+
+        if (currentX > fullSwipeThreshold) {
+          row.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+          if (leftAction) leftAction.style.transition = 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+          row.style.transform = `translateX(${window.innerWidth}px)`; if (leftAction) leftAction.style.width = '100%';
+          setTimeout(() => { 
+            if (type === 'test') {
+              if (swipeSetting === 'normal') openEditTest(id); else deleteTest(id); 
+            } else {
+              if (swipeSetting === 'normal') openEditHomework(id); else deleteHomework(id);
+            }
+          }, 150);
+        } else if (currentX < -fullSwipeThreshold) {
+          row.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+          if (rightAction) rightAction.style.transition = 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+          row.style.transform = `translateX(-${window.innerWidth}px)`; if (rightAction) rightAction.style.width = '100%';
+          setTimeout(() => { 
+            if (type === 'test') {
+              if (swipeSetting === 'normal') deleteTest(id); else openEditTest(id); 
+            } else {
+              if (swipeSetting === 'normal') deleteHomework(id); else openEditHomework(id);
+            }
+          }, 150);
+        } else {
+          row.style.transition = 'transform 0.2s cubic-bezier(0.25, 1, 0.4, 1)';
+          if (leftAction) leftAction.style.transition = 'width 0.2s cubic-bezier(0.25, 1, 0.4, 1)';
+          if (rightAction) rightAction.style.transition = 'width 0.2s cubic-bezier(0.25, 1, 0.4, 1)';
+
+          row.style.transform = 'translateX(0px)';
+          if (leftAction) leftAction.style.width = '0px';
+          if (rightAction) rightAction.style.width = '0px';
+        }
+        currentX = 0;
+      }
+
+      row.addEventListener('touchstart', (e) => start(e.touches[0].clientX), { passive: true });
+      row.addEventListener('touchmove', (e) => move(e.touches[0].clientX), { passive: true });
+      row.addEventListener('touchend', end);
+      row.addEventListener('mousedown', (e) => { if(e.button === 0) start(e.clientX); });
+      window.addEventListener('mousemove', (e) => { if (isSwiping) move(e.clientX); });
+      window.addEventListener('mouseup', end);
+    }
+
+    function renderTests() {
+      const container = document.getElementById('tests-list-container');
+      container.innerHTML = '';
+      updateGreeting();
+      
+      if (tests.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; margin-top: 40px; font-size: 16px; font-weight: 500;">Keine anstehenden Tests</p>';
+        return;
+      }
+      tests.forEach(test => {
+        const leftActionClass = swipeSetting === 'normal' ? 'bg-edit' : 'bg-delete';
+        const leftActionText = swipeSetting === 'normal' ? 'Edit' : 'Löschen';
+        const leftActionFunc = swipeSetting === 'normal' ? `openEditTest(${test.id})` : `deleteTest(${test.id})`;
+        const rightActionClass = swipeSetting === 'normal' ? 'bg-delete' : 'bg-edit';
+        const rightActionText = swipeSetting === 'normal' ? 'Löschen' : 'Edit';
+        const rightActionFunc = swipeSetting === 'normal' ? `deleteTest(${test.id})` : `openEditTest(${test.id})`;
+
+        const matchedColor = subjectData[test.subject] ? subjectData[test.subject].color : 'var(--accent)';
+
+        container.innerHTML += `
+          <div class="list-row-wrapper" id="wrapper-${test.id}">
+            <div class="swipe-action action-left ${leftActionClass}" onclick="${leftActionFunc}"><span>${leftActionText}</span></div>
+            <div class="swipe-action action-right ${rightActionClass}" onclick="${rightActionFunc}"><span>${rightActionText}</span></div>
+            <div class="list-row" data-id="${test.id}">
+              <div class="subject-stripe" style="background-color: ${matchedColor};"></div>
+              <div class="row-main">
+                <span class="subject">${escapeHtml(test.subject)}</span>
+                <span class="type">${test.type}</span>
+              </div>
+              <p class="description">${escapeHtml(test.desc)}</p>
+              <div class="meta-info">
+                <span class="dates">Lernen: ${test.dateLearn} • Test: ${test.dateTest}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      container.querySelectorAll('.list-row').forEach(row => { initSwipeEngine(row, parseInt(row.getAttribute('data-id')), 'test'); });
+    }
+
+    function renderHomeworks() {
+      const container = document.getElementById('view-homework');
+      container.innerHTML = '';
+      updateGreeting();
+
+      if (homeworks.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; margin-top: 80px; font-size: 16px; font-weight: 500;">Keine Hausaufgaben</p>';
+        return;
+      }
+      homeworks.forEach(hw => {
+        const leftActionClass = swipeSetting === 'normal' ? 'bg-edit' : 'bg-delete';
+        const leftActionText = swipeSetting === 'normal' ? 'Edit' : 'Löschen';
+        const leftActionFunc = swipeSetting === 'normal' ? `openEditHomework(${hw.id})` : `deleteHomework(${hw.id})`;
+        const rightActionClass = swipeSetting === 'normal' ? 'bg-delete' : 'bg-edit';
+        const rightActionText = swipeSetting === 'normal' ? 'Löschen' : 'Edit';
+        const rightActionFunc = swipeSetting === 'normal' ? `deleteHomework(${hw.id})` : `openEditHomework(${hw.id})`;
+
+        const matchedColor = subjectData[hw.subject] ? subjectData[hw.subject].color : 'var(--accent)';
+
+        container.innerHTML += `
+          <div class="list-row-wrapper" id="hw-wrapper-${hw.id}">
+            <div class="swipe-action action-left ${leftActionClass}" onclick="${leftActionFunc}"><span>${leftActionText}</span></div>
+            <div class="swipe-action action-right ${rightActionClass}" onclick="${rightActionFunc}"><span>${rightActionText}</span></div>
+            <div class="list-row" data-id="${hw.id}">
+              <div class="subject-stripe" style="background-color: ${matchedColor};"></div>
+              <div class="row-main">
+                <span class="subject">${escapeHtml(hw.subject)}</span>
+                <span class="type" style="color: #FF9500;">Abgabe</span>
+              </div>
+              <p class="description">${escapeHtml(hw.desc)}</p>
+              <div class="meta-info">
+                <span class="dates">Fällig am: ${hw.dateDue}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      container.querySelectorAll('.list-row').forEach(row => { initSwipeEngine(row, parseInt(row.getAttribute('data-id')), 'homework'); });
+    }
+  </script>
+</body>
+</html>
