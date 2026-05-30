@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Schule">
+  
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231F2430'/%3E%3Cstop offset='100%25' stop-color='%230B0C10'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' fill='url(%23g)'/%3E%3Cpath d='M65 55 C75 42, 110 42, 115 58 C120 76, 60 82, 65 102 C70 120, 110 120, 115 105' stroke='%230A84FF' stroke-width='13' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+
   <title>Schule</title>
   <style>
     /* DYNAMISCHES SYSTEM-DESIGN (Standard: Premium iOS Ultra-Dark) */
@@ -69,7 +73,6 @@
 
     body {
       background: var(--bg-gradient);
-      /* FIX: "fixed" entfernt, da es auf iOS zu weißen Grafikbalken beim Scrollen führt */
       color: var(--text-main);
       height: 100vh;
       overflow: hidden;
@@ -109,7 +112,6 @@
     }
     .add-btn:active { opacity: 0.4; }
 
-    /* FIX: "height: 0" zwingt Safari, die exakte Höhe für Prozentberechnungen freizugeben */
     .view {
       display: none;
       height: 0;
@@ -118,10 +120,8 @@
       -webkit-overflow-scrolling: touch;
       padding: 24px 20px 140px;
     }
-    /* FIX: Von flex auf block gewechselt, damit min-height im Kind-Element triggert */
     .view.active { display: block; }
 
-    /* FIX: Erzeugt jetzt verlässlich +1px künstlichen Inhalt für unendliches iOS-Bouncen */
     .bounce-wrapper {
       min-height: calc(100% + 1px);
       display: flex;
@@ -416,9 +416,11 @@
     }
     .wheel-column { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
     .wheel-column::-webkit-scrollbar { display: none; }
+    
+    /* FIX: "scroll-snap-stop: always" zwingt das iPhone, bei jedem einzelnen Wert einzurasten und verhindert das Überspringen */
     .wheel-item {
       height: 42px; display: flex; align-items: center; justify-content: center; font-size: 16px;
-      color: var(--wheel-text); scroll-snap-align: center; transition: all 0.2s ease;
+      color: var(--wheel-text); scroll-snap-align: center; scroll-snap-stop: always; transition: all 0.2s ease;
     }
     .wheel-item.selected { color: var(--wheel-selected); font-weight: 600; transform: scale(1.05); }
     .wheel-selection-bar {
@@ -893,9 +895,10 @@
       buildWheelColumns('wheel-hw-year', 2026, 2030, 'year');
 
       setTimeout(() => {
-        setWheelPosition('wheel-test-day', 28); setWheelPosition('wheel-test-month', 4); setWheelPosition('wheel-test-year', 0);
-        setWheelPosition('wheel-learn-day', 19); setWheelPosition('wheel-learn-month', 4); setWheelPosition('wheel-learn-year', 0);
-        setWheelPosition('wheel-hw-day', 28); setWheelPosition('wheel-hw-month', 4); setWheelPosition('wheel-hw-year', 0);
+        const today = new Date();
+        setWheelPosition('wheel-test-day', today.getDate() - 1); setWheelPosition('wheel-test-month', today.getMonth()); setWheelPosition('wheel-test-year', years.indexOf(today.getFullYear()));
+        setWheelPosition('wheel-learn-day', today.getDate() - 1); setWheelPosition('wheel-learn-month', today.getMonth()); setWheelPosition('wheel-learn-year', years.indexOf(today.getFullYear()));
+        setWheelPosition('wheel-hw-day', today.getDate() - 1); setWheelPosition('wheel-hw-month', today.getMonth()); setWheelPosition('wheel-hw-year', years.indexOf(today.getFullYear()));
       }, 100);
     }
 
@@ -1056,8 +1059,8 @@
 
         if (currentX > fullSwipeThreshold) {
           row.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
-          if (leftAction) leftAction.style.transition = 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
-          row.style.transform = `translateX(${window.innerWidth}px)`; if (leftAction) leftAction.style.width = '100%';
+          if (leftAction) leftAction.style.width = '100%';
+          row.style.transform = `translateX(${window.innerWidth}px)`;
           setTimeout(() => { 
             if (type === 'test') {
               if (swipeSetting === 'normal') openEditTest(id); else deleteTest(id); 
@@ -1067,8 +1070,8 @@
           }, 150);
         } else if (currentX < -fullSwipeThreshold) {
           row.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
-          if (rightAction) rightAction.style.transition = 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
-          row.style.transform = `translateX(-${window.innerWidth}px)`; if (rightAction) rightAction.style.width = '100%';
+          if (rightAction) rightAction.style.width = '100%';
+          row.style.transform = `translateX(-${window.innerWidth}px)`;
           setTimeout(() => { 
             if (type === 'test') {
               if (swipeSetting === 'normal') deleteTest(id); else openEditTest(id); 
