@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Schule">
   
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="apple-touch-icon" href="https://img.icons8.com/fluent/512/apple-book.png">
+  <meta name="apple-mobile-web-app-title" content="Einträge">
+  
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231e1e20'/%3E%3Cstop offset='100%25' stop-color='%23080809'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' fill='url(%23g)'/%3E%3Cpath d='M70 50 C 50 60, 55 90, 85 90 L 110 90 C 130 90, 130 60, 110 60 Z M 70 95 L 110 95 C 135 95, 135 125, 110 125 L 65 125 C 45 125, 45 95, 65 95' fill='none' stroke='%230A84FF' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E?v=5">
 
-  <title>Schule</title>
+  <title>Einträge - Schule</title>
   <style>
     /* DYNAMISCHES SYSTEM-DESIGN (Standard: Premium iOS Ultra-Dark) */
     :root {
@@ -418,7 +418,6 @@
     .wheel-column { flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
     .wheel-column::-webkit-scrollbar { display: none; }
     
-    /* FIX: "scroll-snap-stop: always" zwingt das iPhone, bei jedem einzelnen Wert sauber einzurasten */
     .wheel-item {
       height: 42px; display: flex; align-items: center; justify-content: center; font-size: 16px;
       color: var(--wheel-text); scroll-snap-align: center; scroll-snap-stop: always; transition: all 0.2s ease;
@@ -452,7 +451,6 @@
   </div>
 
   <div id="view-homework" class="view"></div>
-
   <div id="view-grades" class="view"></div>
 
   <div id="view-settings" class="view">
@@ -465,8 +463,8 @@
             <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">Richtung für Aktionen anpassen</p>
           </div>
           <select id="setting-swipe" class="settings-select" onchange="changeSwipeSetting()">
-            <option value="normal">Links: Löschen • Rechts: Edit</option>
-            <option value="inverted">Links: Edit • Rechts: Löschen</option>
+            <option value="normal">Links: Edit • Rechts: Löschen</option>
+            <option value="inverted">Links: Löschen • Rechts: Edit</option>
           </select>
         </div>
       </div>
@@ -656,14 +654,8 @@
     function toggleHomeworkModal() { document.getElementById('modal-homework').classList.toggle('active'); }
     function toggleGradesModal() { document.getElementById('modal-grades').classList.toggle('active'); }
 
-    function cancelTestEdit() {
-      toggleModal();
-      renderTests();
-    }
-    function cancelHomeworkEdit() {
-      toggleHomeworkModal();
-      renderHomeworks();
-    }
+    function cancelTestEdit() { toggleModal(); renderTests(); }
+    function cancelHomeworkEdit() { toggleHomeworkModal(); renderHomeworks(); }
 
     function updateGreeting() {
       const hr = new Date().getHours();
@@ -671,7 +663,6 @@
       if (hr >= 5 && hr < 12) greet = "Guten Morgen!";
       else if (hr >= 12 && hr < 18) greet = "Guten Tag!";
       else if (hr >= 18 && hr < 22) greet = "Schönen Abend!";
-      else greet = "Gute Nacht!";
       
       document.getElementById('greeting-text').innerText = greet;
 
@@ -680,8 +671,6 @@
         subtext = `Du hast ${tests.length} anstehende(n) Test(s). Zeit zum Lernen!`;
       } else if (homeworks.length > 0) {
         subtext = `Keine Tests, aber du hast noch ${homeworks.length} Hausaufgabe(n) offen.`;
-      } else {
-        subtext = "Alles erledigt! Perfekter Moment zum Entspannen.";
       }
       document.getElementById('greeting-subtext').innerText = subtext;
     }
@@ -768,7 +757,6 @@
       let html = '';
       sorted.forEach(sub => {
         const data = subjectData[sub];
-        
         let avgStr = "—";
         if (data.grades.length > 0) {
           let sum = data.grades.reduce((acc, g) => acc + parseFloat(g.value), 0);
@@ -780,9 +768,7 @@
         if (lastThreeGrades.length === 0) {
           lastThreeHtml = '<span style="color: var(--text-secondary);">Keine Noten</span>';
         } else {
-          lastThreeGrades.forEach(g => {
-            lastThreeHtml += `<span class="grade-badge">${g.value}</span>`;
-          });
+          lastThreeGrades.forEach(g => { lastThreeHtml += `<span class="grade-badge">${g.value}</span>`; });
         }
 
         html += `
@@ -792,9 +778,7 @@
               <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <div>
                   <span class="subject">${sub}</span>
-                  <div class="grades-preview-container">
-                    ${lastThreeHtml}
-                  </div>
+                  <div class="grades-preview-container">${lastThreeHtml}</div>
                 </div>
                 <div style="font-size: 20px; font-weight: 700; color: var(--accent);">${avgStr}</div>
               </div>
@@ -818,7 +802,7 @@
       const data = subjectData[currentSelectedSubject];
 
       if (data.grades.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; padding: 10px; text-align: center;">Noch keine Noten eingetragen.</p>';
+        container.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px; padding: 10px; text-align: center;">Noch keine Noten.</p>';
         return;
       }
 
@@ -838,10 +822,8 @@
     function addGradeToCurrentSubject() {
       const val = document.getElementById('input-grade-value').value;
       const type = document.getElementById('input-grade-type').value;
-
       subjectData[currentSelectedSubject].grades.push({ value: val, type: type });
       subjectData[currentSelectedSubject].lastUpdated = Date.now();
-
       localStorage.setItem('school_subject_data', JSON.stringify(subjectData));
       buildModalGradesList();
       renderGradesTab();
@@ -850,7 +832,6 @@
     function deleteGrade(index) {
       subjectData[currentSelectedSubject].grades.splice(index, 1);
       subjectData[currentSelectedSubject].lastUpdated = Date.now();
-
       localStorage.setItem('school_subject_data', JSON.stringify(subjectData));
       buildModalGradesList();
       renderGradesTab();
@@ -890,7 +871,6 @@
       buildWheelColumns('wheel-learn-day', 1, 31, '');
       buildWheelColumns('wheel-learn-month', 0, 11, 'month');
       buildWheelColumns('wheel-learn-year', 2026, 2030, 'year');
-
       buildWheelColumns('wheel-hw-day', 1, 31, '');
       buildWheelColumns('wheel-hw-month', 0, 11, 'month');
       buildWheelColumns('wheel-hw-year', 2026, 2030, 'year');
@@ -915,8 +895,7 @@
       el.innerHTML = html;
       el.addEventListener('scroll', () => {
         const index = Math.round(el.scrollTop / 42);
-        const items = el.querySelectorAll('.wheel-item');
-        items.forEach((item, idx) => {
+        el.querySelectorAll('.wheel-item').forEach((item, idx) => {
           if (idx === index) item.classList.add('selected');
           else item.classList.remove('selected');
         });
@@ -1019,7 +998,7 @@
       document.getElementById('input-hw-subject').value = hw.subject;
       document.getElementById('textarea-hw-desc').value = hw.desc === 'Keine Beschreibung vorhanden.' ? '' : hw.desc;
       const parts = hw.dateDue.split('.');
-      setWheelPosition('wheel-hw-day', parseInt(parts[0]) - 1); setWheelPosition('wheel-hw-month', parseInt(parts[1]) - 1); setWheelPosition('wheel-hw-year', years.indexOf(parseInt(parts[2])));
+      setWheelPosition('wheel-hw-day', parseInt(parts[0]) - 1); setWheelPosition('wheel-hw-month', parseInt(parts[parts.length - 2]), years.indexOf(parseInt(parts[parts.length - 1])));
       toggleHomeworkModal();
     }
 
@@ -1032,14 +1011,7 @@
       const leftAction = wrapper.querySelector('.action-left');
       const rightAction = wrapper.querySelector('.action-right');
 
-      function start(clientX) { 
-        startX = clientX; 
-        row.style.transition = 'none'; 
-        if (leftAction) leftAction.style.transition = 'none'; 
-        if (rightAction) rightAction.style.transition = 'none'; 
-        isSwiping = true; 
-      }
-      
+      function start(clientX) { startX = clientX; row.style.transition = 'none'; if (leftAction) leftAction.style.transition = 'none'; if (rightAction) rightAction.style.transition = 'none'; isSwiping = true; }
       function move(clientX) {
         if (!isSwiping) return;
         currentX = clientX - startX;
@@ -1063,31 +1035,21 @@
           if (leftAction) leftAction.style.width = '100%';
           row.style.transform = `translateX(${window.innerWidth}px)`;
           setTimeout(() => { 
-            if (type === 'test') {
-              if (swipeSetting === 'normal') openEditTest(id); else deleteTest(id); 
-            } else {
-              if (swipeSetting === 'normal') openEditHomework(id); else deleteHomework(id);
-            }
+            if (type === 'test') { if (swipeSetting === 'normal') openEditTest(id); else deleteTest(id); } 
+            else { if (swipeSetting === 'normal') openEditHomework(id); else deleteHomework(id); }
           }, 150);
         } else if (currentX < -fullSwipeThreshold) {
           row.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
           if (rightAction) rightAction.style.width = '100%';
           row.style.transform = `translateX(-${window.innerWidth}px)`;
           setTimeout(() => { 
-            if (type === 'test') {
-              if (swipeSetting === 'normal') deleteTest(id); else openEditTest(id); 
-            } else {
-              if (swipeSetting === 'normal') deleteHomework(id); else openEditHomework(id);
-            }
+            if (type === 'test') { if (swipeSetting === 'normal') deleteTest(id); else openEditTest(id); } 
+            else { if (swipeSetting === 'normal') deleteHomework(id); else openEditHomework(id); }
           }, 150);
         } else {
           row.style.transition = 'transform 0.2s cubic-bezier(0.25, 1, 0.4, 1)';
-          if (leftAction) leftAction.style.transition = 'width 0.2s cubic-bezier(0.25, 1, 0.4, 1)';
-          if (rightAction) rightAction.style.transition = 'width 0.2s cubic-bezier(0.25, 1, 0.4, 1)';
-
+          if (leftAction) leftAction.style.width = '0px'; if (rightAction) rightAction.style.width = '0px';
           row.style.transform = 'translateX(0px)';
-          if (leftAction) leftAction.style.width = '0px';
-          if (rightAction) rightAction.style.width = '0px';
         }
         currentX = 0;
       }
@@ -1095,18 +1057,14 @@
       row.addEventListener('touchstart', (e) => start(e.touches[0].clientX), { passive: true });
       row.addEventListener('touchmove', (e) => move(e.touches[0].clientX), { passive: true });
       row.addEventListener('touchend', end);
-      row.addEventListener('mousedown', (e) => { if(e.button === 0) start(e.clientX); });
-      window.addEventListener('mousemove', (e) => { if (isSwiping) move(e.clientX); });
-      window.addEventListener('mouseup', end);
     }
 
     function renderTests() {
       const container = document.getElementById('tests-list-container');
       container.innerHTML = '';
       updateGreeting();
-      
       if (tests.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; margin-top: 40px; font-size: 16px; font-weight: 500;">Keine anstehenden Tests</p>';
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; margin-top: 40px; font-size: 16px;">Keine anstehenden Tests</p>';
         return;
       }
       tests.forEach(test => {
@@ -1116,7 +1074,6 @@
         const rightActionClass = swipeSetting === 'normal' ? 'bg-delete' : 'bg-edit';
         const rightActionText = swipeSetting === 'normal' ? 'Löschen' : 'Edit';
         const rightActionFunc = swipeSetting === 'normal' ? `deleteTest(${test.id})` : `openEditTest(${test.id})`;
-
         const matchedColor = subjectData[test.subject] ? subjectData[test.subject].color : 'var(--accent)';
 
         container.innerHTML += `
@@ -1125,14 +1082,9 @@
             <div class="swipe-action action-right ${rightActionClass}" onclick="${rightActionFunc}"><span>${rightActionText}</span></div>
             <div class="list-row" data-id="${test.id}">
               <div class="subject-stripe" style="background-color: ${matchedColor};"></div>
-              <div class="row-main">
-                <span class="subject">${escapeHtml(test.subject)}</span>
-                <span class="type">${test.type}</span>
-              </div>
+              <div class="row-main"><span class="subject">${escapeHtml(test.subject)}</span><span class="type">${test.type}</span></div>
               <p class="description">${escapeHtml(test.desc)}</p>
-              <div class="meta-info">
-                <span class="dates">Lernen: ${test.dateLearn} • Test: ${test.dateTest}</span>
-              </div>
+              <div class="meta-info"><span class="dates">Lernen: ${test.dateLearn} • Test: ${test.dateTest}</span></div>
             </div>
           </div>
         `;
@@ -1143,11 +1095,9 @@
     function renderHomeworks() {
       const container = document.getElementById('view-homework');
       container.innerHTML = '';
-      updateGreeting();
-
       let html = '';
       if (homeworks.length === 0) {
-        html = '<p style="color: var(--text-secondary); text-align: center; margin-top: 80px; font-size: 16px; font-weight: 500;">Keine Hausaufgaben</p>';
+        html = '<p style="color: var(--text-secondary); text-align: center; margin-top: 80px; font-size: 16px;">Keine Hausaufgaben</p>';
       } else {
         homeworks.forEach(hw => {
           const leftActionClass = swipeSetting === 'normal' ? 'bg-edit' : 'bg-delete';
@@ -1156,7 +1106,6 @@
           const rightActionClass = swipeSetting === 'normal' ? 'bg-delete' : 'bg-edit';
           const rightActionText = swipeSetting === 'normal' ? 'Löschen' : 'Edit';
           const rightActionFunc = swipeSetting === 'normal' ? `deleteHomework(${hw.id})` : `openEditHomework(${hw.id})`;
-
           const matchedColor = subjectData[hw.subject] ? subjectData[hw.subject].color : 'var(--accent)';
 
           html += `
@@ -1165,14 +1114,9 @@
               <div class="swipe-action action-right ${rightActionClass}" onclick="${rightActionFunc}"><span>${rightActionText}</span></div>
               <div class="list-row" data-id="${hw.id}">
                 <div class="subject-stripe" style="background-color: ${matchedColor};"></div>
-                <div class="row-main">
-                  <span class="subject">${escapeHtml(hw.subject)}</span>
-                  <span class="type" style="color: #FF9500;">Abgabe</span>
-                </div>
+                <div class="row-main"><span class="subject">${escapeHtml(hw.subject)}</span><span class="type" style="color: #FF9500;">Abgabe</span></div>
                 <p class="description">${escapeHtml(hw.desc)}</p>
-                <div class="meta-info">
-                  <span class="dates">Fällig am: ${hw.dateDue}</span>
-                </div>
+                <div class="meta-info"><span class="dates">Fällig am: ${hw.dateDue}</span></div>
               </div>
             </div>
           `;
