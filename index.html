@@ -109,13 +109,23 @@
     }
     .add-btn:active { opacity: 0.4; }
 
+    /* ERZWUNGENES SCROLLEN FÜR NATIVEN iOS BOUNCE EFFECT */
     .view {
       display: none;
       flex: 1;
-      overflow-y: auto;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
       padding: 24px 20px 140px;
     }
     .view.active { display: flex; flex-direction: column; }
+
+    /* Sorgt für den unendlichen Gummiband-Effekt beim Ziehen */
+    .bounce-wrapper {
+      min-height: calc(100% + 1px);
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
 
     .greeting-container {
       margin-bottom: 24px;
@@ -425,13 +435,15 @@
   </header>
 
   <div id="view-tests" class="view active">
-    <div class="greeting-container">
-      <div class="greeting-time" id="greeting-text">Guten Morgen!</div>
-      <div class="greeting-sub" id="greeting-subtext">Lade deine Schuldaten...</div>
-    </div>
+    <div class="bounce-wrapper">
+      <div class="greeting-container">
+        <div class="greeting-time" id="greeting-text">Guten Morgen!</div>
+        <div class="greeting-sub" id="greeting-subtext">Lade deine Schuldaten...</div>
+      </div>
 
-    <div class="settings-heading" style="margin: 0 4px 12px; padding-left: 0;">Anstehende Tests</div>
-    <div id="tests-list-container"></div>
+      <div class="settings-heading" style="margin: 0 4px 12px; padding-left: 0;">Anstehende Tests</div>
+      <div id="tests-list-container"></div>
+    </div>
   </div>
 
   <div id="view-homework" class="view"></div>
@@ -439,45 +451,47 @@
   <div id="view-grades" class="view"></div>
 
   <div id="view-settings" class="view">
-    <div class="settings-heading">Allgemein</div>
-    <div class="list-row-wrapper">
-      <div class="list-row settings-row">
-        <div>
-          <span class="subject" style="font-size: 17px;">Wischgesten</span>
-          <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">Richtung für Aktionen anpassen</p>
+    <div class="bounce-wrapper">
+      <div class="settings-heading">Allgemein</div>
+      <div class="list-row-wrapper">
+        <div class="list-row settings-row">
+          <div>
+            <span class="subject" style="font-size: 17px;">Wischgesten</span>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">Richtung für Aktionen anpassen</p>
+          </div>
+          <select id="setting-swipe" class="settings-select" onchange="changeSwipeSetting()">
+            <option value="normal">Links: Löschen • Rechts: Edit</option>
+            <option value="inverted">Links: Edit • Rechts: Löschen</option>
+          </select>
         </div>
-        <select id="setting-swipe" class="settings-select" onchange="changeSwipeSetting()">
-          <option value="normal">Links: Löschen • Rechts: Edit</option>
-          <option value="inverted">Links: Edit • Rechts: Löschen</option>
-        </select>
       </div>
-    </div>
 
-    <div class="list-row-wrapper">
-      <div class="list-row settings-row">
-        <div>
-          <span class="subject" style="font-size: 17px;">Erscheinungsbild</span>
-          <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">App-Thema wechseln</p>
+      <div class="list-row-wrapper">
+        <div class="list-row settings-row">
+          <div>
+            <span class="subject" style="font-size: 17px;">Erscheinungsbild</span>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">App-Thema wechseln</p>
+          </div>
+          <select id="setting-theme" class="settings-select" onchange="changeThemeSetting()">
+            <option value="dark">Dunkel</option>
+            <option value="light">Hell</option>
+          </select>
         </div>
-        <select id="setting-theme" class="settings-select" onchange="changeThemeSetting()">
-          <option value="dark">Dunkel</option>
-          <option value="light">Hell</option>
-        </select>
       </div>
-    </div>
 
-    <div class="settings-heading">Personalisierung</div>
-    <div class="list-row-wrapper" onclick="toggleColorsFolder()">
-      <div class="list-row settings-row" style="cursor: pointer;">
-        <div>
-          <span class="subject" style="font-size: 17px;">Noten Farben</span>
-          <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">Farben für alle Fächer verwalten</p>
+      <div class="settings-heading">Personalisierung</div>
+      <div class="list-row-wrapper" onclick="toggleColorsFolder()">
+        <div class="list-row settings-row" style="cursor: pointer;">
+          <div>
+            <span class="subject" style="font-size: 17px;">Noten Farben</span>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-top: 2px;">Farben für alle Fächer verwalten</p>
+          </div>
+          <span id="folder-arrow" style="color: var(--accent); font-size: 16px; font-weight: 700; transition: transform 0.25s ease; display: inline-block;">▸</span>
         </div>
-        <span id="folder-arrow" style="color: var(--accent); font-size: 16px; font-weight: 700; transition: transform 0.25s ease; display: inline-block;">▸</span>
       </div>
+      
+      <div id="settings-colors-container" style="display: none; flex-direction: column; gap: 2px; margin-top: -6px; padding-bottom: 14px;"></div>
     </div>
-    
-    <div id="settings-colors-container" style="display: none; flex-direction: column; gap: 2px; margin-top: -6px; padding-bottom: 14px;"></div>
   </div>
 
   <nav class="tab-bar">
@@ -489,7 +503,7 @@
 
   <div id="modal" class="modal-sheet">
     <div class="modal-header">
-      <span class="modal-btn" onclick="toggleModal()">Abbrechen</span>
+      <span class="modal-btn" onclick="cancelTestEdit()">Abbrechen</span>
       <span class="modal-title" id="modal-view-title">Neuer Eintrag</span>
       <span class="modal-btn" style="font-weight: 600;" onclick="saveTest()">Fertig</span>
     </div>
@@ -536,7 +550,7 @@
 
   <div id="modal-homework" class="modal-sheet">
     <div class="modal-header">
-      <span class="modal-btn" onclick="toggleHomeworkModal()">Abbrechen</span>
+      <span class="modal-btn" onclick="cancelHomeworkEdit()">Abbrechen</span>
       <span class="modal-title" id="modal-homework-title">Neue Hausaufgabe</span>
       <span class="modal-btn" style="font-weight: 600;" onclick="saveHomework()">Fertig</span>
     </div>
@@ -636,6 +650,16 @@
     function toggleModal() { document.getElementById('modal').classList.toggle('active'); }
     function toggleHomeworkModal() { document.getElementById('modal-homework').classList.toggle('active'); }
     function toggleGradesModal() { document.getElementById('modal-grades').classList.toggle('active'); }
+
+    // NEU: Setzt hängengebliebene Swipe-Boxen beim Abbrechen sofort sauber zurück
+    function cancelTestEdit() {
+      toggleModal();
+      renderTests();
+    }
+    function cancelHomeworkEdit() {
+      toggleHomeworkModal();
+      renderHomeworks();
+    }
 
     // Dynamic Greeting Logik
     function updateGreeting() {
@@ -738,6 +762,7 @@
       container.innerHTML = '';
       const sorted = getSortedSubjects();
 
+      let html = '';
       sorted.forEach(sub => {
         const data = subjectData[sub];
         
@@ -757,7 +782,7 @@
           });
         }
 
-        container.innerHTML += `
+        html += `
           <div class="list-row-wrapper" onclick="openSubjectGrades('${sub}')">
             <div class="list-row">
               <div class="subject-stripe" style="background-color: ${data.color};"></div>
@@ -774,6 +799,7 @@
           </div>
         `;
       });
+      container.innerHTML = `<div class="bounce-wrapper">${html}</div>`;
     }
 
     function openSubjectGrades(subject) {
@@ -1115,38 +1141,40 @@
       container.innerHTML = '';
       updateGreeting();
 
+      let html = '';
       if (homeworks.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; margin-top: 80px; font-size: 16px; font-weight: 500;">Keine Hausaufgaben</p>';
-        return;
-      }
-      homeworks.forEach(hw => {
-        const leftActionClass = swipeSetting === 'normal' ? 'bg-edit' : 'bg-delete';
-        const leftActionText = swipeSetting === 'normal' ? 'Edit' : 'Löschen';
-        const leftActionFunc = swipeSetting === 'normal' ? `openEditHomework(${hw.id})` : `deleteHomework(${hw.id})`;
-        const rightActionClass = swipeSetting === 'normal' ? 'bg-delete' : 'bg-edit';
-        const rightActionText = swipeSetting === 'normal' ? 'Löschen' : 'Edit';
-        const rightActionFunc = swipeSetting === 'normal' ? `deleteHomework(${hw.id})` : `openEditHomework(${hw.id})`;
+        html = '<p style="color: var(--text-secondary); text-align: center; margin-top: 80px; font-size: 16px; font-weight: 500;">Keine Hausaufgaben</p>';
+      } else {
+        homeworks.forEach(hw => {
+          const leftActionClass = swipeSetting === 'normal' ? 'bg-edit' : 'bg-delete';
+          const leftActionText = swipeSetting === 'normal' ? 'Edit' : 'Löschen';
+          const leftActionFunc = swipeSetting === 'normal' ? `openEditHomework(${hw.id})` : `deleteHomework(${hw.id})`;
+          const rightActionClass = swipeSetting === 'normal' ? 'bg-delete' : 'bg-edit';
+          const rightActionText = swipeSetting === 'normal' ? 'Löschen' : 'Edit';
+          const rightActionFunc = swipeSetting === 'normal' ? `deleteHomework(${hw.id})` : `openEditHomework(${hw.id})`;
 
-        const matchedColor = subjectData[hw.subject] ? subjectData[hw.subject].color : 'var(--accent)';
+          const matchedColor = subjectData[hw.subject] ? subjectData[hw.subject].color : 'var(--accent)';
 
-        container.innerHTML += `
-          <div class="list-row-wrapper" id="hw-wrapper-${hw.id}">
-            <div class="swipe-action action-left ${leftActionClass}" onclick="${leftActionFunc}"><span>${leftActionText}</span></div>
-            <div class="swipe-action action-right ${rightActionClass}" onclick="${rightActionFunc}"><span>${rightActionText}</span></div>
-            <div class="list-row" data-id="${hw.id}">
-              <div class="subject-stripe" style="background-color: ${matchedColor};"></div>
-              <div class="row-main">
-                <span class="subject">${escapeHtml(hw.subject)}</span>
-                <span class="type" style="color: #FF9500;">Abgabe</span>
-              </div>
-              <p class="description">${escapeHtml(hw.desc)}</p>
-              <div class="meta-info">
-                <span class="dates">Fällig am: ${hw.dateDue}</span>
+          html += `
+            <div class="list-row-wrapper" id="hw-wrapper-${hw.id}">
+              <div class="swipe-action action-left ${leftActionClass}" onclick="${leftActionFunc}"><span>${leftActionText}</span></div>
+              <div class="swipe-action action-right ${rightActionClass}" onclick="${rightActionFunc}"><span>${rightActionText}</span></div>
+              <div class="list-row" data-id="${hw.id}">
+                <div class="subject-stripe" style="background-color: ${matchedColor};"></div>
+                <div class="row-main">
+                  <span class="subject">${escapeHtml(hw.subject)}</span>
+                  <span class="type" style="color: #FF9500;">Abgabe</span>
+                </div>
+                <p class="description">${escapeHtml(hw.desc)}</p>
+                <div class="meta-info">
+                  <span class="dates">Fällig am: ${hw.dateDue}</span>
+                </div>
               </div>
             </div>
-          </div>
-        `;
-      });
+          `;
+        });
+      }
+      container.innerHTML = `<div class="bounce-wrapper">${html}</div>`;
       container.querySelectorAll('.list-row').forEach(row => { initSwipeEngine(row, parseInt(row.getAttribute('data-id')), 'homework'); });
     }
   </script>
