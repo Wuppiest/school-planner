@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Schule</title>
   <style>
     /* DYNAMISCHES SYSTEM-DESIGN (Standard: Premium iOS Ultra-Dark) */
@@ -69,7 +69,7 @@
 
     body {
       background: var(--bg-gradient);
-      background-attachment: fixed;
+      /* FIX: "fixed" entfernt, da es auf iOS zu weißen Grafikbalken beim Scrollen führt */
       color: var(--text-main);
       height: 100vh;
       overflow: hidden;
@@ -109,17 +109,19 @@
     }
     .add-btn:active { opacity: 0.4; }
 
-    /* ERZWUNGENES SCROLLEN FÜR NATIVEN iOS BOUNCE EFFECT */
+    /* FIX: "height: 0" zwingt Safari, die exakte Höhe für Prozentberechnungen freizugeben */
     .view {
       display: none;
+      height: 0;
       flex: 1;
       overflow-y: scroll;
       -webkit-overflow-scrolling: touch;
       padding: 24px 20px 140px;
     }
-    .view.active { display: flex; flex-direction: column; }
+    /* FIX: Von flex auf block gewechselt, damit min-height im Kind-Element triggert */
+    .view.active { display: block; }
 
-    /* Sorgt für den unendlichen Gummiband-Effekt beim Ziehen */
+    /* FIX: Erzeugt jetzt verlässlich +1px künstlichen Inhalt für unendliches iOS-Bouncen */
     .bounce-wrapper {
       min-height: calc(100% + 1px);
       display: flex;
@@ -651,7 +653,6 @@
     function toggleHomeworkModal() { document.getElementById('modal-homework').classList.toggle('active'); }
     function toggleGradesModal() { document.getElementById('modal-grades').classList.toggle('active'); }
 
-    // NEU: Setzt hängengebliebene Swipe-Boxen beim Abbrechen sofort sauber zurück
     function cancelTestEdit() {
       toggleModal();
       renderTests();
@@ -661,7 +662,6 @@
       renderHomeworks();
     }
 
-    // Dynamic Greeting Logik
     function updateGreeting() {
       const hr = new Date().getHours();
       let greet = "Schönen Abend!";
